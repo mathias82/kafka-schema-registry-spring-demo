@@ -28,6 +28,6 @@ VALUES
    'Manthos',
    'Staurou',
    TRUE,
-   '2025-10-19T21:00:00Z'::timestamptz,
+   '2025-10-19T21:00:00Z',
    35)
 ON CONFLICT (id) DO NOTHING;
