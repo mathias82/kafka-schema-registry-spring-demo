@@ -1,0 +1,15 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+    properties:
+      schema.registry.url: http://localhost:8081
+    consumer:
+      group-id: user-svc
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        specific.avro.reader: true
+
+app:
+  topic: users.v1
+

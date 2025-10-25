@@ -1,0 +1,77 @@
+# Minimal Demo: Kafka Schema Registry with Spring Boot (Java 21, Avro)
+
+This repo shows a tiny **producer** and **consumer** using **Avro** with **Confluent Schema Registry**, plus a **CI script** to check compatibility & register schemas.
+
+## Quickstart
+
+1) Start infra:
+```bash
+docker compose up -d
+# Kafka at localhost:29092, Schema Registry at http://localhost:8081
+```
+
+2) Build all:
+```bash
+./mvnw -q -DskipTests package || mvn -q -DskipTests package
+```
+
+3) (Optional) Register schema via CI script:
+```bash
+bash scripts/schema-ci.sh
+```
+
+4) Run consumer:
+```bash
+cd consumer-app
+../mvnw spring-boot:run || mvn spring-boot:run
+```
+
+5) Run producer (new terminal):
+```bash
+cd producer-app
+../mvnw spring-boot:run || mvn spring-boot:run
+```
+
+6) Send a message:
+```bash
+curl -X POST http://localhost:8080/users   -H "Content-Type: application/json"   -d '{"id":"u-1","email":"user1@example.com","phone":"2100000000"}'
+```
+
+You should see the consumer log the received `User` record.
+
+---
+
+### Evolution test
+
+- Update `common-schemas/src/main/avro/User.avsc` (e.g., add optional field with default).
+- Run `bash scripts/schema-ci.sh` to check **BACKWARD** compatibility and register the new version.
+- Apps have `auto.register.schemas=false` and `use.latest.version=true` to force CI-driven registration.
+
+
+
+
+## Use with Confluent Cloud (bring your own keys)
+Create a `.env` file or export env vars:
+
+```bash
+export CLOUD_BOOTSTRAP_SERVERS="pkc-xxxxx.us-central1.gcp.confluent.cloud:9092"
+export CLOUD_API_KEY="******"
+export CLOUD_API_SECRET="******"
+export SR_URL="https://xxxxx.us-central1.gcp.confluent.cloud"
+export SR_API_KEY="******"
+export SR_API_SECRET="******"
+```
+
+Then run with the **cloud** profile:
+
+```bash
+# Consumer
+cd consumer-app
+../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
+
+# Producer
+cd ../producer-app
+../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
+```
+
+> Τα apps είναι ρυθμισμένα με `auto.register.schemas=false` και `use.latest.version=true`. Κάνε register schema με το `scripts/schema-ci.sh` ή μέσω UI/CLI στο Confluent Cloud πριν στείλεις μηνύματα.

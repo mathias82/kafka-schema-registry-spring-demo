@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "namespace": "dev.demo.avro",
+  "name": "User",
+  "fields": [
+    { "name": "id", "type": "string" },
+    { "name": "email", "type": "string" },
+    { "name": "phone", "type": ["null", "string"], "default": null },
+    { "name": "firstName", "type": "string", "default": "" },
+    { "name": "lastName", "type": "string", "default": "" },
+    { "name": "isActive", "type": "boolean", "default": true },
+    { "name": "createdAt", "type": ["null","string"], "default": null },
+    { "name": "age", "type": "int", "default": 0 }
+  ]
+}

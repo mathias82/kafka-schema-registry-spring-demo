@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: ./docker/postgres
+    container_name: kafka-confluent
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: kafka
+      POSTGRES_PASSWORD: kafkaConfluent
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_users:/var/lib/postgresql/data
+
+volumes:
+  postgres_users:

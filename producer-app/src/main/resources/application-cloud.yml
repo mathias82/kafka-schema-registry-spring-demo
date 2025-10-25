@@ -1,0 +1,24 @@
+server:
+  port: 9100
+spring:
+  kafka:
+    bootstrap-servers: ${CLOUD_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: >
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username='${CLOUD_API_KEY}' password='${CLOUD_API_SECRET}';
+
+      schema.registry.url: ${SR_URL}
+      basic.auth.credentials.source: USER_INFO
+      schema.registry.basic.auth.user.info: ${SR_API_KEY}:${SR_API_SECRET}
+
+      value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicNameStrategy
+      auto.register.schemas: false
+      use.latest.version: true
+      latest.compatibility.strict: true
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
