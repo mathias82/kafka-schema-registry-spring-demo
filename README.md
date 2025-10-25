@@ -1,6 +1,6 @@
 # Minimal Demo: Kafka Schema Registry with Spring Boot (Java 21, Avro)
 
-This repo shows a tiny **producer** and **consumer** using **Avro** with **Confluent Schema Registry**, plus a **CI script** to check compatibility & register schemas.
+This repo shows a tiny **producer** and **consumer** using **Avro** with **Confluent Schema Registry**.
 
 ## Quickstart
 
@@ -13,11 +13,6 @@ docker compose up -d
 2) Build all:
 ```bash
 ./mvnw -q -DskipTests package || mvn -q -DskipTests package
-```
-
-3) (Optional) Register schema via CI script:
-```bash
-bash scripts/schema-ci.sh
 ```
 
 4) Run consumer:
@@ -34,7 +29,7 @@ cd producer-app
 
 6) Send a message:
 ```bash
-curl -X POST http://localhost:8080/users   -H "Content-Type: application/json"   -d '{"id":"u-1","email":"user1@example.com","phone":"2100000000"}'
+curl -X POST http://localhost:8080/users   -H "Content-Type: application/json"   -d '{"id":"u-20","email":"mstauroy@gmail.com","phone":"2109456738","firstName":"Manthos","lastName":"Staurou","isActive":true,"age":35}'
 ```
 
 You should see the consumer log the received `User` record.
@@ -42,9 +37,9 @@ You should see the consumer log the received `User` record.
 ---
 
 ### Evolution test
-
+- Create account https://confluent.cloud/ 
 - Update `common-schemas/src/main/avro/User.avsc` (e.g., add optional field with default).
-- Run `bash scripts/schema-ci.sh` to check **BACKWARD** compatibility and register the new version.
+- Use **BACKWARD** compatibility in confluent cloud and register the new version.
 - Apps have `auto.register.schemas=false` and `use.latest.version=true` to force CI-driven registration.
 
 
