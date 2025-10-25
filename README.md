@@ -5,10 +5,12 @@ This repo shows a tiny **producer** and **consumer** using **Avro** with **Confl
 ## Quickstart
 
 1) Start infra:
+   Postgrsql : Run Dockerfile and the docker compose file 
 ```bash
 docker compose up -d
 # Kafka at localhost:29092, Schema Registry at http://localhost:8081
 ```
+it will create database schema with record
 
 2) Build all:
 ```bash
@@ -41,9 +43,6 @@ You should see the consumer log the received `User` record.
 - Update `common-schemas/src/main/avro/User.avsc` (e.g., add optional field with default).
 - Use **BACKWARD** compatibility in confluent cloud and register the new version.
 - Apps have `auto.register.schemas=false` and `use.latest.version=true` to force CI-driven registration.
-
-
-
 
 ## Use with Confluent Cloud (bring your own keys)
 Create a `.env` file or export env vars:
