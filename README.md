@@ -67,5 +67,3 @@ cd consumer-app
 cd ../producer-app
 ../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
 ```
-
-> Τα apps είναι ρυθμισμένα με `auto.register.schemas=false` και `use.latest.version=true`. Κάνε register schema μέσω UI/CLI στο Confluent Cloud πριν στείλεις μηνύματα.
