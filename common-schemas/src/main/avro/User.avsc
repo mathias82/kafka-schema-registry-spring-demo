@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "dev.demo.avro",
+  "namespace": "com.mathias.kafka.schema",
   "name": "User",
   "fields": [
     { "name": "id", "type": "string" },

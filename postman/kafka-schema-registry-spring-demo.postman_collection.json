@@ -1,0 +1,45 @@
+{
+  "info": {
+    "_postman_id": "28f91425-1a38-4041-982a-60c6269f96eb",
+    "name": "Kafka Schema Registry Spring Boot Demo",
+    "description": "Postman collection for Kafka Schema Registry + Spring Boot demo.\n\nThis collection sends REST requests to the Producer service, which publishes Avro events to Kafka and Schema Registry.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create User (Kafka Producer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"u-20\",\n  \"email\": \"mstauroy@gmail.com\",\n  \"phone\": \"2109456738\",\n  \"firstName\": \"Manthos\",\n  \"lastName\": \"Staurou\",\n  \"isActive\": true,\n  \"age\": 35\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/users",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "users"
+          ]
+        },
+        "description": "Publishes a User Avro event to Kafka using Schema Registry."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "producerBaseUrl",
+      "value": "http://localhost:8080"
+    }
+  ]
+}

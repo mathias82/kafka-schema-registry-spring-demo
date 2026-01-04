@@ -10,7 +10,7 @@
     <relativePath/>
   </parent>
 
-  <groupId>dev.demo</groupId>
+  <groupId>com.mathias.kafka.schema</groupId>
   <artifactId>kafka-schema-registry-spring-demo</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>

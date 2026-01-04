@@ -5,8 +5,23 @@ app:
   topic: users.v1
 
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users
+    username: kafka
+    password: kafkaConfluent
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
   kafka:
     bootstrap-servers: localhost:29092
+    client-id: user-producer
     properties:
       schema.registry.url: http://localhost:8081
       use.latest.version: true
@@ -14,4 +29,4 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
-
+      acks: all
