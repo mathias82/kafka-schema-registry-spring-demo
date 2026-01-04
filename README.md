@@ -1,69 +1,118 @@
-# Minimal Demo: Kafka Schema Registry with Spring Boot (Java 21, Avro)
+# Kafka Schema Registry with Spring Boot – Complete Demo
 
-This repo shows a tiny **producer** and **consumer** using **Avro** with **Confluent Schema Registry**.
+A **production-ready Spring Boot demo** showcasing how to use **Apache Kafka with Confluent Schema Registry and Avro serialization**.
 
-## Quickstart
-
-1) Start infra:
-   Postgrsql : Run Dockerfile and the docker compose file 
-```bash
-docker compose up -d
-# Kafka at localhost:29092, Schema Registry at http://localhost:8081
-```
-it will create database schema with record
-
-2) Build all:
-```bash
-./mvnw -q -DskipTests package || mvn -q -DskipTests package
-```
-
-4) Run consumer:
-```bash
-cd consumer-app
-../mvnw spring-boot:run || mvn spring-boot:run
-```
-
-5) Run producer (new terminal):
-```bash
-cd producer-app
-../mvnw spring-boot:run || mvn spring-boot:run
-```
-
-6) Send a message:
-```bash
-curl -X POST http://localhost:8080/users   -H "Content-Type: application/json"   -d '{"id":"u-20","email":"mstauroy@gmail.com","phone":"2109456738","firstName":"Manthos","lastName":"Staurou","isActive":true,"age":35}'
-```
-
-You should see the consumer log the received `User` record.
+This repository demonstrates **best practices** for schema management, message compatibility, and event-driven microservices using **Kafka + Spring Boot**.
 
 ---
 
-### Evolution test
-- Create account https://confluent.cloud/ 
-- Update `common-schemas/src/main/avro/User.avsc` (e.g., add optional field with default).
-- Use **BACKWARD** compatibility in confluent cloud and register the new version.
-- Apps have `auto.register.schemas=false` and `use.latest.version=true` to force CI-driven registration.
+## 🚀 Features
 
-## Use with Confluent Cloud (bring your own keys)
-Create a `.env` file or export env vars:
+- Apache Kafka producer & consumer with Spring Boot
+- Confluent Schema Registry integration
+- Avro serialization / deserialization
+- Schema evolution & compatibility handling
+- Clean, minimal, production-style configuration
+- Docker-ready Kafka stack (optional)
+- Java & Spring Kafka best practices
+
+---
+
+## 🧩 Tech Stack
+
+- **Java**
+- **Spring Boot**
+- **Spring for Apache Kafka**
+- **Apache Kafka**
+- **Confluent Schema Registry**
+- **Avro**
+- **Docker / Docker Compose**
+
+---
+
+## 🏗️ Architecture Overview
+
+Spring Boot Producer
+|
+| (Avro)
+v
+Kafka Topic
+|
+| (Schema Registry)
+v
+Spring Boot Consumer
+
+
+Schemas are centrally managed via **Schema Registry**, ensuring:
+- Strong data contracts
+- Backward / forward compatibility
+- Safe evolution of events
+
+---
+
+## 📦 Why Schema Registry?
+
+Using Schema Registry allows you to:
+
+- Avoid breaking consumers
+- Enforce schema compatibility rules
+- Share contracts across microservices
+- Version events safely
+- Reduce serialization errors in production
+
+This is **mandatory knowledge** for serious Kafka systems.
+
+---
+
+## ▶️ How to Run
+
+### 1️⃣ Start Kafka & Schema Registry
 
 ```bash
-export CLOUD_BOOTSTRAP_SERVERS="pkc-xxxxx.us-central1.gcp.confluent.cloud:9092"
-export CLOUD_API_KEY="******"
-export CLOUD_API_SECRET="******"
-export SR_URL="https://xxxxx.us-central1.gcp.confluent.cloud"
-export SR_API_KEY="******"
-export SR_API_SECRET="******"
-```
+docker-compose up -d
 
-Then run with the **cloud** profile:
+2️⃣ Run Spring Boot Application
 
-```bash
-# Consumer
-cd consumer-app
-../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
+mvn spring-boot:run
 
-# Producer
-cd ../producer-app
-../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
-```
+🧪 Testing the Flow
+
+- Produce Kafka messages using Avro schemas
+- Observe schema registration in Schema Registry UI
+- Consume messages safely with enforced schema compatibility
+
+📚 Who Is This For?
+
+- Java / Spring Boot developers
+- Kafka engineers
+- Backend & microservices architects
+
+Developers preparing for:
+
+- Confluent Kafka certifications
+- Event-driven architecture interviews
+
+💡 Best Practices Covered
+
+- Strongly typed Kafka events
+- Schema evolution strategies
+- Clean Kafka configuration
+- Separation of producer & consumer concerns
+- Avoiding JSON pitfalls in distributed systems
+
+🌟 Star the Repo
+
+If this repository helped you:
+
+⭐ Star it
+🍴 Fork it
+🧠 Learn Kafka the right way
+
+📬 Author
+
+Created by Mathias
+Senior Java & Spring Boot Engineer
+Kafka • Event Streaming • Microservices
+
+Feel free to open issues or contribute 🚀
+
