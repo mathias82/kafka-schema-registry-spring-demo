@@ -1,12 +1,10 @@
 # Kafka Schema Registry Spring Boot Demo (Avro Producer & Consumer with PostgreSQL)
 
-This repository demonstrates how to build an **event‑driven microservice** using **Apache Kafka**, **Confluent Schema Registry**, **Avro** and **PostgreSQL**.  It consists of a Spring Boot *producer* that publishes user events and a Spring Boot *consumer* that deserializes Avro messages from Kafka and persists them to a PostgreSQL database using Spring Data JPA.
-
-The project covers best practices around schema management, message compatibility, database persistence and cloud readiness.  It’s a small but production‑style template you can extend for your own systems.
+This repository demonstrates how to build an **event-driven Spring Boot microservice** using **Apache Kafka**, **Confluent Schema Registry**, **Avro serialization** and **PostgreSQL persistence**.
 
 ---
 
-# Kafka Schema Registry Spring Boot Demo
+# What this Demo has
 
 This repository provides a **complete Spring Boot example**
 using **Apache Kafka**, **Confluent Schema Registry** and **Avro serialization**.
