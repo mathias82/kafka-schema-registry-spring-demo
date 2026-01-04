@@ -17,14 +17,14 @@ evolved and consumed in a real-world event-driven application.
 
 ---
 
-## Why This Demo Exists
+## What This Demo Shows
 
-Kafka applications often fail at runtime due to incompatible Avro schema changes.
-This demo shows how to:
-
-- Validate schema compatibility using Confluent Schema Registry
-- Safely evolve schemas using BACKWARD compatibility
-- Persist Avro events to PostgreSQL using Spring Data JPA
+- Spring Boot Kafka producer using Avro
+- Spring Boot Kafka consumer deserializing Avro messages
+- Confluent Schema Registry integration
+- PostgreSQL persistence using Spring Data JPA
+- Schema evolution with backward compatibility
+- Local development using Docker Compose
 
 ---
 
