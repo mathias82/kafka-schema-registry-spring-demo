@@ -13,6 +13,17 @@ using **Confluent Schema Registry**, **Avro serialization** and **PostgreSQL per
 
 ---
 
+## Why This Demo Exists
+
+Kafka applications often fail at runtime due to incompatible Avro schema changes.
+This demo shows how to:
+
+- Validate schema compatibility using Confluent Schema Registry
+- Safely evolve schemas using BACKWARD compatibility
+- Persist Avro events to PostgreSQL using Spring Data JPA
+
+---
+
 ## ✨ Key Features
 
 - **Kafka producer & consumer** written in Java 21 with Spring Boot.
