@@ -240,12 +240,30 @@ Because the services are configured with `auto.register.schemas=false` and `use.
 
 ---
 
+## 🧭 About / Description
+
+This project is a learning template and production starter kit for event‑driven architectures. It shows how to:
+
+- Define strong data contracts using Avro and Schema Registry.
+- Produce and consume Kafka events with Spring Boot.
+- Persist events to a relational database (PostgreSQL).
+- Evolve schemas safely and manage compatibility in CI/CD.
+
+Feel free to fork, star and extend it for your own microservice projects.
 
 ---
 
-## 🤝 Contributing
+## 📬 Postman Collection
 
-Contributions, issues and feature requests are welcome!  Feel free to fork the repository and submit pull requests.  When proposing changes, please ensure they include relevant tests and documentation.
+A Postman collection is provided in the postman/ directory. Import it into Postman to quickly test the REST API:
+
+- postman import kafka-schema-registry-spring-demo.postman_collection.json
+
+The collection includes the Create User request with the correct JSON payload. Run it after starting the producer and consumer to see end‑to‑end functionality.
+
+## 🤝 Contributing & Feedback
+
+Contributions, feedback and issues are welcome! Feel free to open pull requests or issues. If you find this project helpful, please ⭐ star it on GitHub and share it on social media – it helps others discover it.
 
 ---
 
