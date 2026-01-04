@@ -4,7 +4,7 @@ This repository demonstrates how to build an **event-driven Spring Boot microser
 
 ---
 
-# What this Demo has
+## What this Demo has
 
 This repository provides a **complete Spring Boot example**
 using **Apache Kafka**, **Confluent Schema Registry** and **Avro serialization**.
@@ -15,7 +15,7 @@ evolved and consumed in a real-world event-driven application.
 
 ---
 
-## What This Demo Shows
+## What This Demo Includes
 
 - Spring Boot Kafka producer using Avro
 - Spring Boot Kafka consumer deserializing Avro messages
