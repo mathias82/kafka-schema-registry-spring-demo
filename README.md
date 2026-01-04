@@ -28,6 +28,17 @@ evolved and consumed in a real-world event-driven application.
 
 ---
 
+## Who Should Use This Project
+
+This demo is useful for developers who want to:
+
+- Learn Kafka Schema Registry with Spring Boot
+- Understand Avro serialization in Kafka
+- Build producer/consumer pipelines with PostgreSQL
+- Create a local Kafka development environment
+
+---
+
 ## ✨ Key Features
 
 - **Kafka producer & consumer** written in Java 21 with Spring Boot.
