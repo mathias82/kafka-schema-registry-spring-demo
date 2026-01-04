@@ -8,16 +8,8 @@ The project covers best practices around schema management, message compatibilit
 
 # Kafka Schema Registry Spring Boot Demo
 
-A complete **end-to-end event-driven microservice demo** using:
-
-- **Apache Kafka** with **Confluent Schema Registry**
-- **Avro serialization**
-- **Spring Boot** producer & consumer
-- **PostgreSQL** persistence via **Spring Data JPA**
-- **Fail-fast schema contract validation**
-
-This example shows how to implement **Kafka Schema Registry compatibility checks** at startup,
-persist Avro events to PostgreSQL, and build robust resilient event-driven services.
+A **complete Spring Boot demo** showing how to build an **event-driven Kafka application**
+using **Confluent Schema Registry**, **Avro serialization** and **PostgreSQL persistence**.
 
 ---
 
