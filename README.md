@@ -85,6 +85,8 @@ This demo is useful for developers who want to:
 3. The **consumer** listens to the `users.v1` topic, deserializes Avro messages and maps them to a JPA `UserEntity`.  It persists each user to the `users.contact` table in PostgreSQL.
 
 This separation of concerns ensures loose coupling between services and safe schema evolution.
+The architecture represents a typical event-driven microservice using Kafka, Schema Registry and a relational database.
+
 
 ---
 
@@ -133,6 +135,11 @@ cd kafka-schema-registry-spring-demo
 ```
 
 ### Start infrastructure
+
+The project includes a Docker Compose setup for running:
+- Apache Kafka
+- Confluent Schema Registry
+- PostgreSQL
 
 Start Kafka, Schema Registry and PostgreSQL using Docker Compose:
 
