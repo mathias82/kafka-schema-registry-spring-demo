@@ -20,25 +20,31 @@ The project covers best practices around schema management, message compatibilit
 ## 🏗️ Architecture Overview
 
 ```
-             HTTP POST /users
-                    │
-                    ▼
-               Spring Boot
-              Producer App
-                    │
-        ┌──────── Kafka topic ─────────┐
-        │      (Avro messages)         │
-        └──────────────────────────────┘
-                    │
-         Schema Registry validates
-           and stores Avro schemas
-                    │
-                    ▼
-               Spring Boot
-              Consumer App
-                    │
-           User records persisted
-              to PostgreSQL
+                            ┌─────────────┐
+                            │  Postman    │
+                            │  (client)   │
+                            └──────┬──────┘
+                                   │ HTTP POST /users
+                                   ▼
+                        ┌─────────────────────┐
+                        │ Spring Boot Producer│
+                        │ (REST + Avro)       │
+                        └─────────┬───────────┘
+                                  Kafka topic (users.v1)
+                        ┌─────────▼───────────┐
+                        │   Kafka Brokers     │
+                        │   + Schema Registry │
+                        └─────────┬───────────┘
+                                   │ Avro → User
+                                   ▼
+                        ┌─────────────────────┐
+                        │ Spring Boot Consumer│
+                        │ (Avro + JPA)        │
+                        └─────────┬───────────┘
+                                   │
+                                   ▼
+                              PostgreSQL
+
 ```
 
 1. The **producer** exposes a `/users` REST endpoint.  It receives a `UserCreateRequest`, validates it and converts it to an Avro `User` record.  The record is serialized and published to Kafka.
@@ -162,6 +168,28 @@ You should see logs in the consumer indicating that the record was received and 
 
 ---
 
+📸 Demo Screenshots
+
+Below are screenshots of the end‑to‑end flow:
+
+Producer logs
+
+This log shows the producer publishing a user to the topic users.v1 using the Schema Registry and Avro serializer.
+<img width="2048" height="604" alt="image" src="https://github.com/user-attachments/assets/db7f8292-9673-4f3f-bf04-a9bce8c4d1b4" />
+
+
+Consumer logs
+
+This log shows the consumer subscribing to users.v1, consuming the Avro record and persisting it to the users.contact table in PostgreSQL.
+<img width="2048" height="606" alt="image" src="https://github.com/user-attachments/assets/f883fec5-b933-47be-88d5-ea3f1c7f17be" />
+
+Postman request
+
+Use the provided Postman collection to test the API easily. The screenshot below shows the request body when creating a user via Postman.
+
+<img width="2048" height="744" alt="image" src="https://github.com/user-attachments/assets/4f30c6e8-7481-4724-9733-88c05d52fb4e" />
+
+
 ## ☁️ Running with Confluent Cloud
 
 To run against Confluent Cloud, create an account at [confluent.cloud](https://confluent.cloud/) and provision a Kafka cluster and Schema Registry.  Then set the following environment variables (either in a `.env` file or exported in your shell):
@@ -191,14 +219,14 @@ With this profile enabled, the applications will connect to Confluent Cloud usin
 
 ---
 
-## 🔄 Schema Evolution
+🔄 Schema Evolution
 
-Avro schemas can evolve over time while maintaining compatibility.  To test evolution:
+Avro schemas can evolve while maintaining compatibility. To test schema evolution:
 
-1. Update `common-schemas/src/main/avro/User.avsc` (for example, add an optional field with a default value).
-2. Build the `common-schemas` module to generate the new Avro classes.
-3. Register the new schema version in Schema Registry.  If using Confluent Cloud, set the compatibility mode to **BACKWARD** or **FULL** to allow existing consumers to continue reading.
-4. Deploy your producer and consumer services against the new version.
+1. Modify common-schemas/src/main/avro/User.avsc (e.g., add an optional field with a default).
+2. Build the common-schemas module (mvn install) to generate new Java classes.
+3. Register the new schema version in Schema Registry (via the UI or API). Set the compatibility mode to BACKWARD or FULL for the subject users-value.
+4. Deploy your producer and consumer using the new jar.
 
 Because the services are configured with `auto.register.schemas=false` and `use.latest.version=true` (in cloud mode), producers will not register schemas automatically in higher environments.  This encourages CI/CD pipelines to manage schemas explicitly.
 
