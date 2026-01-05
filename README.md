@@ -125,7 +125,6 @@ VALUES
    35)
 ON CONFLICT (id) DO NOTHING;
 
----
 
 The JPA `UserEntity` maps to this table and uses a generated `id` as the primary key.  The `userid` column stores the logical identifier coming from the Avro record (`id` field).  You can customise this schema as needed.
 
@@ -169,7 +168,6 @@ a `docker-compose-full.yml` file that starts:
 docker compose -f docker-compose.yml up -d
 
 ---
-
 ### Run the consumer
 
 ```bash
@@ -179,8 +177,8 @@ cd consumer-app
 
 # The application runs on port 8089 by default and listens to the `users.v1` topic.
 ```
----
 
+---
 ### Run the producer
 
 ```bash
@@ -189,6 +187,7 @@ cd ../producer-app
 
 # The application runs on port 8080 by default.  It exposes a POST /users endpoint.
 ```
+---
 
 ### Produce a user event
 
