@@ -148,6 +148,9 @@ docker compose -f docker-compose.yml up -d
 # Schema Registry on http://localhost:8081
 # PostgreSQL on localhost:5432 (user: kafka / password: kafkaConfluent)
 ```
+
+---
+
 ## 🐳 Full Local Stack (Kafka + Schema Registry + PostgreSQL)
 
 For a complete local development environment, this project provides
@@ -158,11 +161,14 @@ a `docker-compose-full.yml` file that starts:
 - Confluent Schema Registry
 - PostgreSQL (used by the Kafka consumer)
 
+---
+
 ### Start the full stack
 
 ```bash
 docker compose -f docker-compose.yml up -d
 
+---
 
 ### Run the consumer
 
@@ -173,6 +179,7 @@ cd consumer-app
 
 # The application runs on port 8089 by default and listens to the `users.v1` topic.
 ```
+---
 
 ### Run the producer
 
