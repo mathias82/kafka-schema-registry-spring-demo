@@ -131,23 +131,6 @@ The JPA `UserEntity` maps to this table and uses a generated `id` as the primary
 
 ---
 
-## 🚀 Quickstart (Local)
-
-### Prerequisites
-
-- **Java 21** and **Maven 3.9+**
-- **Docker** and **Docker Compose** installed
-
-### Clone and build
-
-```bash
-git clone https://github.com/mathias82/kafka-schema-registry-spring-demo.git
-cd kafka-schema-registry-spring-demo
-
-# Build the common Avro schemas and applications
-./mvnw clean install -DskipTests || mvn clean install -DskipTests
-```
-
 ### Start infrastructure
 
 The project includes a Docker Compose setup for running:
