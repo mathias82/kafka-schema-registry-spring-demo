@@ -153,7 +153,7 @@ docker compose -f docker-compose.yml up -d
 ## 🐳 Full Local Stack (Kafka + Schema Registry + PostgreSQL)
 
 For a complete local development environment, this project provides
-a `docker-compose-full.yml` file that starts:
+a `docker-compose.yml` file that starts:
 
 - Apache Kafka
 - Zookeeper
