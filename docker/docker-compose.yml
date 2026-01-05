@@ -42,8 +42,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
 
   postgres:
-    build:
-      context: ./docker/postgres
+    image: postgres:16
     container_name: postgres-users
     environment:
       POSTGRES_DB: users
@@ -52,7 +51,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_users:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   postgres_users:
