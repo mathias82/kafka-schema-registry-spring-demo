@@ -308,8 +308,3 @@ The collection includes the Create User request with the correct JSON payload. R
 
 Contributions, feedback and issues are welcome! Feel free to open pull requests or issues. If you find this project helpful, please ⭐ star it on GitHub and share it on social media – it helps others discover it.
 
----
-
-## 📜 License
-
-This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
