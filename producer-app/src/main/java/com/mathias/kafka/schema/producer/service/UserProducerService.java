@@ -1,7 +1,6 @@
 package com.mathias.kafka.schema.producer.service;
 
 import com.mathias.kafka.schema.User;
-import com.mathias.kafka.schema.producer.component.Validation;
 import com.mathias.kafka.schema.producer.dto.UserCreateRequest;
 import com.mathias.kafka.schema.producer.kafka.UserKafkaProducer;
 import com.mathias.kafka.schema.producer.mapper.UserMapper;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserProducerService {
 
-    private final Validation validation;
     private final UserKafkaProducer userKafkaProducer;
     private final UserMapper userMapper;
 
@@ -23,13 +21,6 @@ public class UserProducerService {
      * Publishes a newly created {@link User} to Kafka.
      *
      * <p>This method performs the following steps:
-     * <ol>
-     *   <li>Maps the incoming {@link UserCreateRequest} DTO to an Avro {@link User} object.</li>
-     *   <li>Validates the user using custom domain validation rules.</li>
-     *   <li>Publishes the user to Kafka via {@code userKafkaProducer}.</li>
-     *   <li>Returns the mapped {@link User} object for further processing.</li>
-     * </ol>
-     *
      * @param dto the incoming user creation request
      * @return the mapped and published {@link User}
      *
@@ -39,7 +30,6 @@ public class UserProducerService {
     public User publishUser(UserCreateRequest dto) {
         try {
             User user = userMapper.toAvro(dto);
-            validation.validateAvroRecord(user);
             userKafkaProducer.publish(user);
             return user;
         } catch (AvroRuntimeException e) {

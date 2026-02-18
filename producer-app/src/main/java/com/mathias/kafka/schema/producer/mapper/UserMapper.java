@@ -3,6 +3,7 @@ package com.mathias.kafka.schema.producer.mapper;
 import com.mathias.kafka.schema.User;
 import com.mathias.kafka.schema.producer.dto.UserCreateRequest;
 import com.mathias.kafka.schema.producer.dto.UserResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -25,12 +26,12 @@ public interface UserMapper {
 
     @Named("toStringSafe")
     static String toStringSafe(CharSequence cs) {
-        return cs == null ? null : cs.toString();
+        return StringUtils.isEmpty(cs) ? null : cs.toString();
     }
 
     @Named("defaultCreatedAt")
     static String defaultCreatedAt(String value) {
-        return (value == null || value.isBlank())
+        return StringUtils.isBlank(value)
                 ? OffsetDateTime.now(ZoneOffset.UTC).toString()
                 : value;
     }
