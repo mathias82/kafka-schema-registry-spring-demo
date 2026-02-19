@@ -1,7 +1,6 @@
 package com.mathias.kafka.schema.producer.service;
 
 import com.mathias.kafka.schema.User;
-import com.mathias.kafka.schema.producer.component.Validation;
 import com.mathias.kafka.schema.producer.dto.UserCreateRequest;
 import com.mathias.kafka.schema.producer.kafka.UserKafkaProducer;
 import com.mathias.kafka.schema.producer.mapper.UserMapper;
@@ -17,9 +16,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserProducerServiceTest {
-
-    @Mock
-    Validation validation;
 
     @Mock
     UserKafkaProducer userKafkaProducer;
@@ -43,7 +39,6 @@ class UserProducerServiceTest {
 
         // then
         assertEquals(avroUser, result);
-        verify(validation).validateAvroRecord(avroUser);
         verify(userKafkaProducer).publish(avroUser);
     }
 

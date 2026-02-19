@@ -2,8 +2,6 @@ package com.mathias.kafka.schema.producer.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mathias.kafka.schema.User;
-import com.mathias.kafka.schema.producer.component.Validation;
-import com.mathias.kafka.schema.producer.controller.UserEventController;
 import com.mathias.kafka.schema.producer.dto.UserCreateRequest;
 import com.mathias.kafka.schema.producer.dto.UserResponse;
 import com.mathias.kafka.schema.producer.exception.RestExceptionHandler;
@@ -34,8 +32,6 @@ class UserEventControllerTest {
     UserMapper userMapper;
     @Mock
     UserProducerService userProducerService;
-    @Mock
-    Validation validation;
     @InjectMocks
     UserEventController controller;
 
