@@ -43,14 +43,13 @@ class UserProducerServiceTest {
     }
 
     @Test
-    void publishUser_avroViolation_throwsIllegalArgument() {
+    void publishUser_avroViolation_propagatesAvroRuntimeException() {
 
         UserCreateRequest dto = new UserCreateRequest();
-        when(userMapper.toAvro(dto)).thenThrow(new AvroRuntimeException("bad schema"));
+        when(userMapper.toAvro(dto))
+                .thenThrow(new AvroRuntimeException("bad schema"));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        assertThrows(AvroRuntimeException.class,
                 () -> userProducerService.publishUser(dto));
-
-        assertTrue(ex.getMessage().contains("Record violates Avro schema"));
     }
 }

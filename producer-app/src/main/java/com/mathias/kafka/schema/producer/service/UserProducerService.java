@@ -21,21 +21,16 @@ public class UserProducerService {
      * Publishes a newly created {@link User} to Kafka.
      *
      * <p>This method performs the following steps:
-     * @param dto the incoming user creation request
+     * @param userCreateRequest the incoming user creation requestA\zs
      * @return the mapped and published {@link User}
      *
      * @throws IllegalArgumentException if the user violates the Avro schema
      *         (wrapped {@link AvroRuntimeException})
      */
-    public User publishUser(UserCreateRequest dto) {
-        try {
-            User user = userMapper.toAvro(dto);
-            userKafkaProducer.publish(user);
-            return user;
-        } catch (AvroRuntimeException e) {
-            throw new IllegalArgumentException(
-                    "Record violates Avro schema: dev.demo.avro.User: " + e.getMessage(), e);
-        }
+    public User publishUser(UserCreateRequest userCreateRequest) {
+        User user = userMapper.toAvro(userCreateRequest);
+        userKafkaProducer.publish(user);
+        return user;
     }
 
 }
