@@ -1,310 +1,245 @@
-# Kafka Schema Registry Spring Boot Demo (Avro Producer & Consumer with PostgreSQL)
+# Kafka Schema Registry Spring Boot Demo
 
-This repository demonstrates how to build an **event-driven Spring Boot microservice** using **Apache Kafka**, **Confluent Schema Registry**, **Avro serialization** and **PostgreSQL persistence**.
+A runnable end-to-end example of **Spring Boot + Apache Kafka + Confluent Schema Registry + Avro + PostgreSQL**.
 
----
+The demo accepts a user over HTTP, serializes it as a generated Avro record, publishes it to Kafka, consumes it in a separate Spring Boot application, and persists it to PostgreSQL.
 
-## What this Demo has
+## Architecture
 
-This repository provides a **complete Spring Boot example**
-using **Apache Kafka**, **Confluent Schema Registry** and **Avro serialization**.
-
-It demonstrates a **Kafka Avro producer and consumer**
-with **PostgreSQL persistence**, showing how schemas are registered,
-evolved and consumed in a real-world event-driven application.
-
----
-
-## What This Demo Includes
-
-- Spring Boot Kafka producer using Avro
-- Spring Boot Kafka consumer deserializing Avro messages
-- Confluent Schema Registry integration
-- PostgreSQL persistence using Spring Data JPA
-- Schema evolution with backward compatibility
-- Local development using Docker Compose
-
----
-
-## Who Should Use This Project
-
-This demo is useful for developers who want to:
-
-- Learn Kafka Schema Registry with Spring Boot
-- Understand Avro serialization in Kafka
-- Build producer/consumer pipelines with PostgreSQL
-- Create a local Kafka development environment
-
----
-
-## ✨ Key Features
-
-- **Kafka producer & consumer** written in Java 21 with Spring Boot.
-- **Confluent Schema Registry** integration with Avro serialization/deserialization.
-- **PostgreSQL** persistence using Spring Data JPA; includes ready‑made table schema (`users.contact`).
-- **Schema evolution** demonstrated with backward compatibility and versioning.
-- **Docker Compose** configuration to spin up Kafka, Schema Registry and PostgreSQL locally.
-- **Confluent Cloud** support (bring your own API keys) via the `cloud` Spring profile.
-
----
-
-## 🏗️ Architecture Overview
-
-```
-                            ┌─────────────┐
-                            │  Postman    │
-                            │  (client)   │
-                            └──────┬──────┘
-                                   │ HTTP POST /users
-                                   ▼
-                        ┌─────────────────────┐
-                        │ Spring Boot Producer│
-                        │ (REST + Avro)       │
-                        └─────────┬───────────┘
-                                  Kafka topic (users.v1)
-                        ┌─────────▼───────────┐
-                        │   Kafka Brokers     │
-                        │   + Schema Registry │
-                        └─────────┬───────────┘
-                                   │ Avro → User
-                                   ▼
-                        ┌─────────────────────┐
-                        │ Spring Boot Consumer│
-                        │ (Avro + JPA)        │
-                        └─────────┬───────────┘
-                                   │
-                                   ▼
-                              PostgreSQL
-
+```text
+POST /users
+    |
+    v
+Spring Boot Producer
+    |
+    | Avro + Schema Registry
+    v
+Kafka topic: users.v1
+    |
+    v
+Spring Boot Consumer
+    |
+    v
+PostgreSQL: users.contact
 ```
 
-1. The **producer** exposes a `/users` REST endpoint.  It receives a `UserCreateRequest`, validates it and converts it to an Avro `User` record.  The record is serialized and published to Kafka.
-2. The **Schema Registry** stores Avro schemas and enforces compatibility rules when new versions are registered.
-3. The **consumer** listens to the `users.v1` topic, deserializes Avro messages and maps them to a JPA `UserEntity`.  It persists each user to the `users.contact` table in PostgreSQL.
+The producer uses the logical user id as the Kafka record key, so events for the same user are routed consistently. The consumer persists by logical `userId` and reuses the existing database row on duplicate delivery, demonstrating a simple idempotent-consumer pattern.
 
-This separation of concerns ensures loose coupling between services and safe schema evolution.
-The architecture represents a typical event-driven microservice using Kafka, Schema Registry and a relational database.
+## What the repository demonstrates
 
+- Java 21 and Spring Boot
+- Spring for Apache Kafka producer and consumer
+- Generated Avro classes from `common-schemas/src/main/avro/User.avsc`
+- Confluent Schema Registry serialization/deserialization
+- Local Kafka, Schema Registry and PostgreSQL with Docker Compose
+- Confluent Cloud configuration using environment variables
+- Bean Validation at the producer REST boundary
+- PostgreSQL persistence with Spring Data JPA
+- Duplicate-event protection by logical user id
+- Unit tests for producer validation/service logic and consumer persistence behavior
+- GitHub Actions build plus a real end-to-end Kafka verification
 
----
+## Repository layout
 
-## 🗄️ Database Schema
+```text
+common-schemas/   Avro schema and generated model
+producer-app/     REST API and Kafka producer
+consumer-app/     Kafka consumer and PostgreSQL persistence
+docker/           Kafka, Schema Registry and PostgreSQL
+docker/postgres/  Database initialization
+postman/          Postman collection
+scripts/          Automated E2E verification
+```
 
-The consumer stores events in a table named `contact` under the `users` schema.  The DDL is:
+## Prerequisites
 
-```sql
-DROP table IF EXISTS users.Contact;
-CREATE SCHEMA IF NOT EXISTS users;
+- Java 21
+- Maven 3.9+
+- Docker with Docker Compose v2
+- `curl`
 
-CREATE TABLE users.contact (
-	id int8 GENERATED BY DEFAULT AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
-	userid text NULL,
-	email text NULL,
-	phone text NULL,
-	first_name text NULL,
-	last_name text NULL,
-	is_active bool DEFAULT true NOT NULL,
-	created_at text NULL,
-	age int4 NULL,
-	CONSTRAINT contact_pkey PRIMARY KEY (id)
-);
-CREATE INDEX idx_users_created_at ON users.contact USING btree (created_at DESC);
-CREATE INDEX idx_users_email ON users.contact USING btree (email);
-CREATE INDEX idx_users_is_active ON users.contact USING btree (is_active);
+## Run locally
 
-INSERT INTO users.Contact (id, userId, email, phone, first_name, last_name, is_active, created_at, age)
-VALUES
-  ('1',
-   'u-22',
-   'mstauroy@gmail.com',
-   '2109456738',
-   'Manthos',
-   'Staurou',
-   TRUE,
-   '2025-10-19T21:00:00Z',
-   35)
-ON CONFLICT (id) DO NOTHING;
-
-
-The JPA `UserEntity` maps to this table and uses a generated `id` as the primary key.  The `userid` column stores the logical identifier coming from the Avro record (`id` field).  You can customise this schema as needed.
-
----
-
-### Start infrastructure
-
-The project includes a Docker Compose setup for running:
-- Apache Kafka
-- Confluent Schema Registry
-- PostgreSQL
-
-Start Kafka, Schema Registry and PostgreSQL using Docker Compose:
+### 1. Start infrastructure
 
 ```bash
-# spin up Kafka, Schema Registry and Postgres
-docker compose -f docker-compose.yml up -d
-
-# Kafka will be available on localhost:29092
-# Schema Registry on http://localhost:8081
-# PostgreSQL on localhost:5432 (user: kafka / password: kafkaConfluent)
+docker compose -f docker/docker-compose.yml up -d --wait
 ```
 
----
+Local endpoints:
 
-## 🐳 Full Local Stack (Kafka + Schema Registry + PostgreSQL)
+- Kafka: `localhost:29092`
+- Schema Registry: `http://localhost:8081`
+- PostgreSQL: `localhost:5432`
+- PostgreSQL database: `users`
+- PostgreSQL user/password: `kafka` / `kafkaConfluent`
 
-For a complete local development environment, this project provides
-a `docker-compose.yml` file that starts:
+The local password is intentionally a demo credential. Do not reuse it outside this local environment.
 
-- Apache Kafka
-- Zookeeper
-- Confluent Schema Registry
-- PostgreSQL (used by the Kafka consumer)
-
----
-
-### Start the full stack
+### 2. Build the project
 
 ```bash
-docker compose -f docker-compose.yml up -d
-
----
-### Run the consumer
-
-```bash
-# from the project root
-cd consumer-app
-../mvnw spring-boot:run || mvn spring-boot:run
-
-# The application runs on port 8089 by default and listens to the `users.v1` topic.
+mvn clean verify
 ```
 
----
-### Run the producer
+### 3. Start the consumer
 
 ```bash
-cd ../producer-app
-../mvnw spring-boot:run || mvn spring-boot:run
-
-# The application runs on port 8080 by default.  It exposes a POST /users endpoint.
+mvn -pl consumer-app -am spring-boot:run
 ```
----
 
-### Produce a user event
+The consumer listens to `users.v1` and persists records into `users.contact`.
 
-Send a HTTP POST to create a user:
+### 4. Start the producer
+
+In another terminal:
+
+```bash
+mvn -pl producer-app -am spring-boot:run
+```
+
+The producer exposes `POST http://localhost:8080/users`.
+
+### 5. Produce an event
 
 ```bash
 curl -X POST http://localhost:8080/users \
-  -H "Content-Type: application/json" \
+  -H 'Content-Type: application/json' \
   -d '{
-    "id": "u-20",
-    "email": "mstauroy@gmail.com",
-    "phone": "2109456738",
-    "firstName": "Manthos",
-    "lastName": "Staurou",
+    "id": "u-100",
+    "email": "ada@example.com",
+    "phone": "2101234567",
+    "firstName": "Ada",
+    "lastName": "Lovelace",
     "isActive": true,
-    "age": 35
+    "age": 28
   }'
 ```
 
-You should see logs in the consumer indicating that the record was received and saved to PostgreSQL.
+The flow is:
 
----
-
-📸 Demo Screenshots
-
-Below are screenshots of the end‑to‑end flow:
-
-Producer logs
-
-This log shows the producer publishing a user to the topic users.v1 using the Schema Registry and Avro serializer.
-<img width="2048" height="604" alt="image" src="https://github.com/user-attachments/assets/db7f8292-9673-4f3f-bf04-a9bce8c4d1b4" />
-
-
-Consumer logs
-
-This log shows the consumer subscribing to users.v1, consuming the Avro record and persisting it to the users.contact table in PostgreSQL.
-<img width="2048" height="606" alt="image" src="https://github.com/user-attachments/assets/f883fec5-b933-47be-88d5-ea3f1c7f17be" />
-
-Postman request
-
-Use the provided Postman collection to test the API easily. The screenshot below shows the request body when creating a user via Postman.
-
-<img width="2048" height="744" alt="image" src="https://github.com/user-attachments/assets/4f30c6e8-7481-4724-9733-88c05d52fb4e" />
-
-
-## ☁️ Running with Confluent Cloud
-
-To run against Confluent Cloud, create an account at [confluent.cloud](https://confluent.cloud/) and provision a Kafka cluster and Schema Registry.  Then set the following environment variables (either in a `.env` file or exported in your shell):
-
-```bash
-export CLOUD_BOOTSTRAP_SERVERS="pkc-xxxxx.us-central1.gcp.confluent.cloud:9092"
-export CLOUD_API_KEY="<your-kafka-api-key>"
-export CLOUD_API_SECRET="<your-kafka-api-secret>"
-export SR_URL="https://xxxxx.us-central1.gcp.confluent.cloud"
-export SR_API_KEY="<your-schema-registry-api-key>"
-export SR_API_SECRET="<your-schema-registry-api-secret>"
+```text
+HTTP -> producer -> Avro serializer -> Schema Registry -> Kafka
+     -> Avro deserializer -> consumer -> PostgreSQL
 ```
 
-Then start the applications with the `cloud` profile:
+The Schema Registry subject created by the local producer is `users.v1-value`.
+
+## Automated E2E verification
+
+The repository includes a real smoke/E2E scenario:
 
 ```bash
-# Consumer
-cd consumer-app
-../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
-
-# Producer
-cd ../producer-app
-../mvnw spring-boot:run -Dspring-boot.run.profiles=cloud
+bash scripts/verify-e2e.sh
 ```
 
-With this profile enabled, the applications will connect to Confluent Cloud using SASL/SSL and will not automatically register schemas; instead they will use the latest registered schema version.
+It automatically:
 
----
+1. starts Kafka, Schema Registry and PostgreSQL,
+2. builds all Maven modules,
+3. starts the producer and consumer applications,
+4. publishes a real HTTP request,
+5. verifies that the Avro event reaches Kafka and is persisted by the consumer,
+6. verifies that `users.v1-value` exists in Schema Registry,
+7. sends the same logical user again and verifies that only one database row exists.
 
-🔄 Schema Evolution
+GitHub Actions runs both `mvn verify` and this E2E scenario for pull requests and pushes to `master`.
 
-Avro schemas can evolve while maintaining compatibility. To test schema evolution:
+## Request validation
 
-1. Modify common-schemas/src/main/avro/User.avsc (e.g., add an optional field with a default).
-2. Build the common-schemas module (mvn install) to generate new Java classes.
-3. Register the new schema version in Schema Registry (via the UI or API). Set the compatibility mode to BACKWARD or FULL for the subject users-value.
-4. Deploy your producer and consumer using the new jar.
+The producer validates the HTTP payload before mapping it to Avro. `id` and `email` are required, email must be syntactically valid, and `age` cannot be negative.
 
-Because the services are configured with `auto.register.schemas=false` and `use.latest.version=true` (in cloud mode), producers will not register schemas automatically in higher environments.  This encourages CI/CD pipelines to manage schemas explicitly.
+Example invalid request:
 
----
+```bash
+curl -i -X POST http://localhost:8080/users \
+  -H 'Content-Type: application/json' \
+  -d '{"id":"u-101","email":"not-an-email","age":-1}'
+```
 
-## 🧪 Testing & CI
+The application returns HTTP `400` with structured field errors and does not publish the invalid record to Kafka.
 
-- **Unit tests**: Add tests for your mapper, service and controller layers using JUnit and Mockito.
-- **Integration tests**: Use [Testcontainers](https://www.testcontainers.org/) to spin up Kafka, Schema Registry and PostgreSQL in Docker for reproducible integration tests.
-- **Continuous Integration**: Configure GitHub Actions or your preferred CI to run `mvn test` and build the Docker images.
+## Schema evolution
 
----
+The Avro schema lives at:
 
-## 🧭 About / Description
+```text
+common-schemas/src/main/avro/User.avsc
+```
 
-This project is a learning template and production starter kit for event‑driven architectures. It shows how to:
+For backward-compatible evolution, add fields with suitable defaults or make them nullable as appropriate, regenerate/build the model, and register/deploy the compatible schema version.
 
-- Define strong data contracts using Avro and Schema Registry.
-- Produce and consume Kafka events with Spring Boot.
-- Persist events to a relational database (PostgreSQL).
-- Evolve schemas safely and manage compatibility in CI/CD.
+The local profile uses `auto.register.schemas=true` for convenience. The Confluent Cloud producer profile uses:
 
-Feel free to fork, star and extend it for your own microservice projects.
+```text
+auto.register.schemas=false
+use.latest.version=true
+latest.compatibility.strict=true
+```
 
----
+This keeps schema registration out of the application in higher environments and makes CI/CD or a dedicated schema-management process responsible for registration.
 
-## 📬 Postman Collection
+## Confluent Cloud
 
-A Postman collection is provided in the postman/ directory. Import it into Postman to quickly test the REST API:
+Copy the environment template and fill in your own credentials locally:
 
-- postman import kafka-schema-registry-spring-demo.postman_collection.json
+```bash
+cp .env.example .env
+```
 
-The collection includes the Create User request with the correct JSON payload. Run it after starting the producer and consumer to see end‑to‑end functionality.
+Required Kafka and Schema Registry variables:
 
-## 🤝 Contributing & Feedback
+```bash
+export CLOUD_BOOTSTRAP_SERVERS='pkc-xxxxx.region.provider.confluent.cloud:9092'
+export CLOUD_API_KEY='<kafka-api-key>'
+export CLOUD_API_SECRET='<kafka-api-secret>'
+export SR_URL='https://xxxxx.region.provider.confluent.cloud'
+export SR_API_KEY='<schema-registry-api-key>'
+export SR_API_SECRET='<schema-registry-api-secret>'
+```
 
-Contributions, feedback and issues are welcome! Feel free to open pull requests or issues. If you find this project helpful, please ⭐ star it on GitHub and share it on social media – it helps others discover it.
+Optional database overrides used by the cloud consumer profile:
 
+```bash
+export DB_URL='jdbc:postgresql://localhost:5432/users'
+export DB_USERNAME='kafka'
+export DB_PASSWORD='kafkaConfluent'
+```
+
+Run the applications with the `cloud` profile:
+
+```bash
+mvn -pl consumer-app -am spring-boot:run -Dspring-boot.run.profiles=cloud
+mvn -pl producer-app -am spring-boot:run -Dspring-boot.run.profiles=cloud
+```
+
+The cloud profile uses SASL/SSL for Kafka and Schema Registry API-key authentication. Secrets are not committed to the repository; `.env` files are ignored.
+
+## PostgreSQL model
+
+The database is initialized from `docker/postgres/init.sql`. The logical event id is stored in `userid`, which is `NOT NULL` and `UNIQUE`. The JPA primary key remains a generated `BIGINT`.
+
+That distinction lets the consumer detect redelivery of the same logical user and update the existing row instead of blindly inserting a duplicate.
+
+## Postman
+
+Import:
+
+```text
+postman/kafka-schema-registry-spring-demo.postman_collection.json
+```
+
+and run the Create User request after starting the local stack and both applications.
+
+## Related project: fail-fast contract validation
+
+For startup-time Schema Registry contract enforcement in Spring Boot, see:
+
+- `spring-kafka-contract-starter`: https://github.com/mathias82/spring-kafka-contract-starter
+- focused E2E contract demo: https://github.com/mathias82/spring-kafka-contract-demo
+
+The starter complements this practical application demo by validating expected subjects, compatibility modes and schemas before an application starts serving traffic.
+
+## Contributing
+
+Issues and pull requests are welcome. If the demo is useful, a GitHub star helps other Kafka/Spring developers discover it.
