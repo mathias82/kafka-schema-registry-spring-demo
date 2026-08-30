@@ -15,22 +15,23 @@ spring:
     hibernate:
       ddl-auto: validate
       naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl  # Use default physical naming strategy
-      show-sql: true
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true  # Optional: Format SQL queries for readability
+        format_sql: true
         jdbc:
-          time_zone: UTC  # Optional: Specify JDBC time zone
+          time_zone: UTC
 
   kafka:
     bootstrap-servers: localhost:29092
     client-id: user-consumer
-    properties:
-      schema.registry.url: http://localhost:8081
-      specific.avro.reader: true
     consumer:
       group-id: user-svc
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      auto-offset-reset: earliest
+    properties:
+      schema.registry.url: http://localhost:8081
+      specific.avro.reader: true

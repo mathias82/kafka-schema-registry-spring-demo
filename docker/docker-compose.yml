@@ -1,11 +1,7 @@
-version: '3.8'
-
 services:
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     hostname: zookeeper
-    container_name: zookeeper
     ports:
       - "2181:2181"
     environment:
@@ -15,7 +11,6 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     hostname: kafka
-    container_name: kafka
     depends_on:
       - zookeeper
     ports:
@@ -28,22 +23,31 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:29092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.0
     hostname: schema-registry
-    container_name: schema-registry
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8081/subjects >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   postgres:
     image: postgres:16
-    container_name: postgres-users
     environment:
       POSTGRES_DB: users
       POSTGRES_USER: kafka
@@ -52,7 +56,12 @@ services:
       - "5432:5432"
     volumes:
       - kafka_postgres_data:/var/lib/postgresql/data
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kafka -d users"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
 volumes:
   kafka_postgres_data:

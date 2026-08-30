@@ -4,15 +4,21 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.avro.AvroRuntimeException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -24,7 +30,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(apiError(ex.getMessage(), req.getRequestURI(), null));
     }
 
-
     @ExceptionHandler(AvroRuntimeException.class)
     public ResponseEntity<ApiError> handleAvro(AvroRuntimeException ex, HttpServletRequest req) {
         String msg = "Record violates Avro schema: " + ex.getMessage();
@@ -32,25 +37,42 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(apiError(msg, req.getRequestURI(), null));
     }
 
-
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest req) {
-        Map<String, String> fields = new HashMap<>();
-        for (ConstraintViolation<?> v : ex.getConstraintViolations()) {
-            fields.put(v.getPropertyPath().toString(), v.getMessage());
+        Map<String, String> fields = new LinkedHashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            fields.put(violation.getPropertyPath().toString(), violation.getMessage());
         }
-        String msg = "Validation failed for request parameters";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(apiError(msg, req.getRequestURI(), fields));
+                .body(apiError("Validation failed for request parameters", req.getRequestURI(), fields));
     }
-
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest req) {
-        ex.getRequiredType();
-        String msg = "Parameter '%s' should be of type %s".formatted(ex.getName(), ex.getRequiredType().getSimpleName());
+        String requiredType = ex.getRequiredType() == null ? "required type" : ex.getRequiredType().getSimpleName();
+        String msg = "Parameter '%s' should be of type %s".formatted(ex.getName(), requiredType);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(apiError(msg, req.getRequestURI(), null));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        Map<String, String> fields = new LinkedHashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            fields.putIfAbsent(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+
+        String path = request instanceof ServletWebRequest servletWebRequest
+                ? servletWebRequest.getRequest().getRequestURI()
+                : "";
+
+        return ResponseEntity.badRequest()
+                .body(apiError("Validation failed", path, fields));
     }
 
     public record ApiError(
@@ -62,7 +84,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             Map<String, String> fieldErrors
     ) {
     }
-
 
     private ApiError apiError(String message, String path, Map<String, String> fieldErrors) {
         return new ApiError(

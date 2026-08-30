@@ -7,6 +7,7 @@ import com.mathias.kafka.schema.producer.entities.GeneralResponse;
 import com.mathias.kafka.schema.producer.helper.CommonUtils;
 import com.mathias.kafka.schema.producer.mapper.UserMapper;
 import com.mathias.kafka.schema.producer.service.UserProducerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class UserEventController {
   private final UserMapper userMapper;
 
   @PostMapping
-  public GeneralResponse<UserResponse> produceEvent(@RequestBody UserCreateRequest dto) {
+  public GeneralResponse<UserResponse> produceEvent(@Valid @RequestBody UserCreateRequest dto) {
     User avroUser = userProducerService.publishUser(dto);
     UserResponse response = userMapper.toResponse(avroUser);
     return CommonUtils.buildGeneralResponse(response);

@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Local environment / secrets
+.env
+**/.env
+!.env.example
+!**/.env.example
+
 ### STS ###
 .apt_generated
 .classpath
@@ -23,7 +29,6 @@ logs/
 # Log file
 *.log
 *.log.*.gz
-
 
 ### NetBeans ###
 /nbproject/private/

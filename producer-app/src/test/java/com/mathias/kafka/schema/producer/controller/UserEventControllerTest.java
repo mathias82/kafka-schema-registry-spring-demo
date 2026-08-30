@@ -14,24 +14,27 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class UserEventControllerTest {
-    @Mock
-    KafkaTemplate<String, User> kafkaTemplate;
+
     @Mock
     UserMapper userMapper;
+
     @Mock
     UserProducerService userProducerService;
+
     @InjectMocks
     UserEventController controller;
 
@@ -48,10 +51,9 @@ class UserEventControllerTest {
 
     @Test
     void send_validUser_returns200_andSendsToKafka() throws Exception {
-
-        var dto = getUserResponse("ada@acme.com");
+        var dto = getUserRequest("ada@acme.com");
         var avro = getAvro();
-        var resp = getUserRequest();
+        var resp = getUserResponse();
 
         when(userProducerService.publishUser(eq(dto))).thenReturn(avro);
         when(userMapper.toResponse(eq(avro))).thenReturn(resp);
@@ -69,26 +71,21 @@ class UserEventControllerTest {
         verifyNoMoreInteractions(userProducerService, userMapper);
     }
 
-
     @Test
-    void send_invalidUser_returns400_andDoesNotSend() throws Exception {
-
-        var dto = getUserResponse(null);
-
-        when(userProducerService.publishUser(eq(dto)))
-                .thenThrow(new IllegalArgumentException("Record violates Avro schema: dev.demo.avro.User"));
+    void send_invalidUser_returns400_andDoesNotPublish() throws Exception {
+        var dto = getUserRequest(null);
 
         mvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("violates Avro schema")));
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.fieldErrors.email").exists());
 
-        verify(userProducerService).publishUser(eq(dto));
-        verifyNoInteractions(userMapper);
+        verifyNoInteractions(userProducerService, userMapper);
     }
 
-    private UserCreateRequest getUserResponse(String email) {
+    private UserCreateRequest getUserRequest(String email) {
         return UserCreateRequest.builder()
                 .id("u-100")
                 .email(email)
@@ -114,7 +111,7 @@ class UserEventControllerTest {
                 .build();
     }
 
-    private UserResponse getUserRequest() {
+    private UserResponse getUserResponse() {
         return UserResponse.builder()
                 .id("u-100")
                 .email("ada@acme.com")
